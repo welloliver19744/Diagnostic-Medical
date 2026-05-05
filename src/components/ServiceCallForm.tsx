@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import type { Tables } from "@/integrations/supabase/types";
 
+type ClientRow = Tables<"clients">;
+
 type ServiceCall = Tables<"service_calls">;
 
 const schema = z.object({
