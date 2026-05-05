@@ -86,7 +86,16 @@ export const ServiceCallForm = ({ open, onOpenChange, editing, onSaved }: Props)
       if (!userData.user) throw new Error("Não autenticado");
 
       const payload = {
-        ...parsed.data,
+        client_name: parsed.data.client_name,
+        service_date: parsed.data.service_date,
+        address: parsed.data.address || null,
+        contact: parsed.data.contact || null,
+        reported_defect: parsed.data.reported_defect || null,
+        service_performed: parsed.data.service_performed || null,
+        parts_replaced: parsed.data.parts_replaced || null,
+        technician: parsed.data.technician || null,
+        status: parsed.data.status,
+        notes: parsed.data.notes || null,
         value: parsed.data.value ? parseFloat(parsed.data.value.replace(",", ".")) : null,
         user_id: userData.user.id,
       };
