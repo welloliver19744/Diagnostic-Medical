@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      service_calls: {
+        Row: {
+          address: string | null
+          client_name: string
+          contact: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          parts_replaced: string | null
+          reported_defect: string | null
+          service_date: string
+          service_performed: string | null
+          status: string
+          technician: string | null
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          address?: string | null
+          client_name: string
+          contact?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          parts_replaced?: string | null
+          reported_defect?: string | null
+          service_date?: string
+          service_performed?: string | null
+          status?: string
+          technician?: string | null
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          address?: string | null
+          client_name?: string
+          contact?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          parts_replaced?: string | null
+          reported_defect?: string | null
+          service_date?: string
+          service_performed?: string | null
+          status?: string
+          technician?: string | null
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
