@@ -85,9 +85,11 @@ function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 function NavList() {
+  const { isStaff } = useRole();
+  const items = navAll.filter((n) => !n.staffOnly || isStaff);
   return (
     <nav className="flex-1 flex flex-col gap-0.5">
-      {nav.map((n) => (
+      {items.map((n) => (
         <NavLink
           key={n.to}
           to={n.to}
