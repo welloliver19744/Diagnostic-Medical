@@ -13,6 +13,7 @@ import { ServiceCallForm } from "@/components/ServiceCallForm";
 import { PageHeader } from "@/components/AppLayout";
 import { generateServiceCallPDF } from "@/lib/pdf";
 import { toast } from "sonner";
+import { useRole } from "@/hooks/use-role";
 import type { Tables } from "@/integrations/supabase/types";
 
 type ServiceCall = Tables<"service_calls">;
