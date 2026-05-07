@@ -82,11 +82,11 @@ const Index = () => {
       <PageHeader
         title="Chamados Técnicos"
         subtitle="Gerencie todos os atendimentos da sua operação"
-        action={
+        action={isStaff && (
           <Button onClick={() => { setEditing(null); setFormOpen(true); }} className="gradient-brand glow-brand text-primary-foreground border-0">
             <Plus className="w-4 h-4 mr-1" /> Novo chamado
           </Button>
-        }
+        )}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
