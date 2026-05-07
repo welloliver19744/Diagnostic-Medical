@@ -54,10 +54,13 @@ export const ServiceCallForm = ({ open, onOpenChange, editing, onSaved }: Props)
   const [saving, setSaving] = useState(false);
   const [clients, setClients] = useState<ClientRow[]>([]);
   const [clientId, setClientId] = useState<string>("");
+  const [techs, setTechs] = useState<{ id: string; full_name: string | null }[]>([]);
+  const [assignedTo, setAssignedTo] = useState<string>("_none");
 
   useEffect(() => {
     if (open) {
       supabase.from("clients").select("*").order("name").then(({ data }) => setClients(data ?? []));
+      supabase.from("profiles").select("id, full_name").order("full_name").then(({ data }) => setTechs(data ?? []));
     }
   }, [open]);
 
