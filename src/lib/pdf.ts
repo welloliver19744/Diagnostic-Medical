@@ -102,22 +102,44 @@ export async function generateServiceCallPDF(c: SC) {
 
   const drawCheckCell = (x: number, yy: number, w: number, h: number, label: string, val?: boolean | null) => {
     doc.rect(x, yy, w, h);
+    // Reserve right area for SIM/NÃO checkboxes
+    const boxAreaW = 26;
+    const boxAreaX = x + w - boxAreaW;
+    // Label (wrap within remaining width)
     doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.setTextColor(80);
-    const labelLines = doc.splitTextToSize(label, w - 16);
-    doc.text(labelLines, x + 1.2, yy + 3);
+    const labelLines = doc.splitTextToSize(label, w - boxAreaW - 2);
+    doc.text(labelLines, x + 1.2, yy + 3.2);
     doc.setTextColor(0);
-    // checkboxes
-    const cy = yy + h / 2 + 0.5;
-    const cx = x + w - 14;
-    doc.rect(cx, cy - 2, 2.5, 2.5);
-    if (val === true) doc.text("X", cx + 0.4, cy + 0.2);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-    doc.text("SIM", cx + 3.5, cy + 0.2);
-    doc.setFont("helvetica", "bold");
-    doc.rect(cx + 7, cy - 2, 2.5, 2.5);
-    if (val === false) doc.text("X", cx + 7.4, cy + 0.2);
-    doc.setFont("helvetica", "normal"); doc.setFontSize(7);
-    doc.text("NÃO", cx + 10.5, cy + 0.2);
+
+    // Checkbox geometry — centered vertically inside the cell
+    const boxSize = 2.6;
+    const midY = yy + h / 2;
+    const boxY = midY - boxSize / 2;
+    // Text baseline aligned to box center
+    const textY = midY + 1;
+
+    // SIM
+    const simBoxX = boxAreaX + 1;
+    doc.setLineWidth(0.25);
+    doc.rect(simBoxX, boxY, boxSize, boxSize);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+    doc.text("SIM", simBoxX + boxSize + 1.2, textY);
+    if (val === true) {
+      doc.setFontSize(8);
+      doc.text("X", simBoxX + boxSize / 2, boxY + boxSize - 0.4, { align: "center" });
+    }
+
+    // NÃO
+    const naoBoxX = boxAreaX + 13;
+    doc.setLineWidth(0.25);
+    doc.rect(naoBoxX, boxY, boxSize, boxSize);
+    doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+    doc.text("NÃO", naoBoxX + boxSize + 1.2, textY);
+    if (val === false) {
+      doc.setFontSize(8);
+      doc.text("X", naoBoxX + boxSize / 2, boxY + boxSize - 0.4, { align: "center" });
+    }
+    doc.setFont("helvetica", "normal");
   };
 
   // Row 1: Técnico + Endereço
