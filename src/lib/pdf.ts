@@ -227,21 +227,22 @@ export async function generateServiceCallPDF(
   drawTextArea("Observações:", c.notes, 18);
 
   // ---- SIGNATURES SECTION (Strictly aligned to bottom) ----
-  y = H - M - 38;
+  y = H - M - 40;
   doc.setFont("helvetica", "bold"); doc.setFontSize(9);
   doc.text("Relatório aprovado por:", M, y + 5);
   doc.line(M + 38, y + 5.5, M + 110, y + 5.5);
   doc.setFont("helvetica", "normal"); doc.text(techName || "", M + 74, y + 5, { align: "center" });
 
-  y += 12;
+  y += 14; // Aumentei de 12 para 14 para dar mais espaço vertical
   doc.setFont("helvetica", "bold");
   doc.text("Assinatura do técnico:", M, y + 5);
   doc.line(M + 35, y + 5.5, M + 100, y + 5.5);
   doc.text("Assinatura do cliente:", M + 105, y + 5);
   doc.line(M + 140, y + 5.5, M + RW, y + 5.5);
 
-  if (techSignature) try { doc.addImage(techSignature, "PNG", M + 45, y - 8, 45, 12); } catch {}
-  if (clientSignature) try { doc.addImage(clientSignature, "PNG", M + 145, y - 8, 45, 12); } catch {}
+  // Diminuí a altura da imagem (de 12 para 10) e ajustei a posição (y - 7) para não subir na linha de cima
+  if (techSignature) try { doc.addImage(techSignature, "PNG", M + 45, y - 7, 45, 10); } catch {}
+  if (clientSignature) try { doc.addImage(clientSignature, "PNG", M + 145, y - 7, 45, 10); } catch {}
   
   doc.setFontSize(8); doc.setFont("helvetica", "normal");
   doc.text(c.client_name || "", M + 170, y + 9, { align: "center" });
