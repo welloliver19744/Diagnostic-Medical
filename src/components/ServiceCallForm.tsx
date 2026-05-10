@@ -355,11 +355,11 @@ export const ServiceCallForm = ({ open, onOpenChange, editing, onSaved }: Props)
           </div>
 
           <Tabs defaultValue="dados">
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="dados">Dados</TabsTrigger>
-              <TabsTrigger value="equip">Equipamento</TabsTrigger>
-              <TabsTrigger value="servico">Serviço</TabsTrigger>
-              <TabsTrigger value="fechamento">Fechamento</TabsTrigger>
+            <TabsList className="flex w-full overflow-x-auto no-scrollbar justify-start md:grid md:grid-cols-4 h-auto p-1 bg-muted/50">
+              <TabsTrigger value="dados" className="flex-1 py-2 text-xs md:text-sm min-w-[80px]">Dados</TabsTrigger>
+              <TabsTrigger value="equip" className="flex-1 py-2 text-xs md:text-sm min-w-[80px]">Equipamento</TabsTrigger>
+              <TabsTrigger value="servico" className="flex-1 py-2 text-xs md:text-sm min-w-[80px]">Serviço</TabsTrigger>
+              <TabsTrigger value="fechamento" className="flex-1 py-2 text-xs md:text-sm min-w-[80px]">Fechamento</TabsTrigger>
             </TabsList>
 
             <TabsContent value="dados" className="space-y-4 pt-4">

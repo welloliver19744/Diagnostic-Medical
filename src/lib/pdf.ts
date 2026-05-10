@@ -197,13 +197,59 @@ export async function generateServiceCallPDF(
     y += h;
   };
 
-  drawTextBlock("Descrição do problema:", c.reported_defect, 22);
-  drawTextBlock("Causa do problema diagnosticado pelo técnico e ação corretiva de serviço ou reparo realizado:", c.service_performed, 28);
+  // Row 8: Descrição do problema
+  doc.rect(M, y, RW, 35);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+  doc.text("Descrição do problema:", M + 1.2, y + 4);
+  doc.setFont("helvetica", "normal");
+  const defectLines = doc.splitTextToSize(c.reported_defect || "", RW - 4);
+  doc.text(defectLines, M + 1.2, y + 8);
+  y += 35;
 
-  drawCheckCell(M, y, RW, cellH, "Verificado e testado? (Indicar nº do Relatório de Resultados de teste com base nas especificações do produto)", c.verified_tested);
-  y += cellH;
-  drawCheckCell(M, y, RW, cellH, "O equipamento voltou a funcionar após o reparo?", c.working_after);
-  y += cellH;
+  // Row 9: Causa diagnosticada e ação corretiva (Espaço ampliado)
+  doc.rect(M, y, RW, 65);
+  doc.setFont("helvetica", "bold");
+  doc.text("Causa do problema diagnosticado pelo técnico e ação corretiva de serviço ou reparo realizado:", M + 1.2, y + 4);
+  doc.setFont("helvetica", "normal");
+  const serviceLines = doc.splitTextToSize(c.service_performed || "", RW - 4);
+  doc.text(serviceLines, M + 1.2, y + 8);
+  y += 65;
+
+  // Row 10: Verificado e testado?
+  const testW = RW * 0.55;
+  doc.rect(M, y, testW, 10);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+  doc.text("Verificado e testado?", M + 1.2, y + 4);
+  
+  const boxS2 = 2.6;
+  const simX = M + 30;
+  doc.rect(simX, y + 2, boxS2, boxS2);
+  doc.text("SIM", simX + 4, y + 4.5);
+  if (c.verified_tested === true) doc.text("X", simX + 0.6, y + 4.1);
+  
+  doc.rect(simX + 12, y + 2, boxS2, boxS2);
+  doc.text("NÃO", simX + 16, y + 4.5);
+  if (c.verified_tested === false) doc.text("X", simX + 12.6, y + 4.1);
+  
+  doc.setFontSize(6.5); doc.setFont("helvetica", "normal");
+  doc.text("(Indicar o número do Relatório de Resultados de teste com base nas especificações", simX + 28, y + 4);
+  doc.text("do produto)", M + 1.2, y + 8);
+
+  // Row 11: Voltou a funcionar?
+  const workW = RW - testW;
+  doc.rect(M + testW, y, workW, 10);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+  doc.text("O equipamento voltou a funcionar após o reparo?", M + testW + 1.2, y + 4);
+  
+  const simX2 = M + testW + 65;
+  doc.rect(simX2, y + 2, boxS2, boxS2);
+  doc.text("SIM", simX2 + 4, y + 4.5);
+  if (c.working_after === true) doc.text("X", simX2 + 0.6, y + 4.1);
+  
+  doc.rect(simX2 + 12, y + 2, boxS2, boxS2);
+  doc.text("NÃO", simX2 + 16, y + 4.5);
+  if (c.working_after === false) doc.text("X", simX2 + 12.6, y + 4.1);
+  y += 10;
 
   // Parts tables for laser
   const isLaser = c.report_type === "laser";
@@ -245,7 +291,16 @@ export async function generateServiceCallPDF(
     drawTextBlock("Peças trocadas:", c.parts_replaced, 14);
   }
 
-  drawTextBlock("Observações:", c.notes, 18);
+  // Row 12: Observações
+  doc.rect(M, y, RW, 12);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8);
+  doc.text("Observações:", M + 1.2, y + 4);
+  doc.setFont("helvetica", "normal");
+  const obsLines = doc.splitTextToSize(c.notes || "", RW - 4);
+  doc.text(obsLines, M + 1.2, y + 8);
+  y += 12;
+
+  y += 5; // Espaço antes das assinaturas
 
   // Aprovado por
   doc.setFont("helvetica", "bold"); doc.setFontSize(9);
