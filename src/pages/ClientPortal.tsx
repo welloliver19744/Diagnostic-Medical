@@ -40,16 +40,29 @@ export default function ClientPortal() {
     if (!signature) { toast.error("Desenhe sua assinatura primeiro"); return; }
     setSubmitting(true);
     try {
+      console.log("Enviando assinatura...", { token, length: signature.length });
       const res = await fetch(`${FUNCTIONS_URL}/submit-client-signature`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, signature }),
       });
+      
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Erro");
+      if (!res.ok) throw new Error(json.error || "Erro ao salvar assinatura");
+      
       toast.success("Assinatura registrada!");
-      await load();
+      
+      // Força o carregamento dos dados atualizados do banco
+      const reloadRes = await fetch(`${FUNCTIONS_URL}/get-service-call-by-token?token=${token}`);
+      const reloadJson = await reloadRes.json();
+      if (reloadRes.ok) {
+        setData(reloadJson);
+        if (reloadJson.service_call?.client_signature) {
+          setSignature(reloadJson.service_call.client_signature);
+        }
+      }
     } catch (e: any) {
+      console.error("Erro no portal:", e);
       toast.error(e.message);
     } finally {
       setSubmitting(false);

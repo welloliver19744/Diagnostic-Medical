@@ -16,8 +16,8 @@ Deno.serve(async (req) => {
     if (!/^[0-9a-f-]{36}$/i.test(token)) {
       return new Response(JSON.stringify({ error: "invalid_token" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    if (!signature.startsWith("data:image/") || signature.length > 500_000) {
-      return new Response(JSON.stringify({ error: "invalid_signature" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!signature.startsWith("data:image/") || signature.length > 2_000_000) {
+      return new Response(JSON.stringify({ error: "invalid_signature", size: signature.length }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const supabase = createClient(
