@@ -11,11 +11,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { SignaturePad } from "@/components/SignaturePad";
 import { toast } from "sonner";
-import { Plus, Trash2, Sparkles, Wand2 } from "lucide-react";
+import { Plus, Trash2, Sparkles, Wand2, History, Loader2 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type ClientRow = Tables<"clients">;
 type ServiceCall = Tables<"service_calls">;
+
+const fmtDate = (d?: string | null) => d ? new Date(d + "T00:00").toLocaleDateString("pt-BR") : "";
 
 interface PartLine { number: string; description: string; qty: string; nr_op: string; }
 
@@ -76,6 +78,95 @@ export const ServiceCallForm = ({ open, onOpenChange, editing, onSaved }: Props)
   const [partsUsed, setPartsUsed] = useState<PartLine[]>([]);
   const [partsRequested, setPartsRequested] = useState<PartLine[]>([]);
   const [clientSignature, setClientSignature] = useState<string | null>(null);
+  const [analyzingHistory, setAnalyzingHistory] = useState(false);
+  const [aiHistory, setAiHistory] = useState<string | null>(null);
+
+  const askAIHistory = async () => {
+    if (!form.equipment_serial) {
+      toast.error("Informe o Nº de série para analisar o histórico.");
+      return;
+    }
+    
+    setAnalyzingHistory(true);
+    setAiHistory(null);
+    toast.info("Iniciando busca de histórico...");
+
+    try {
+      const serial = form.equipment_serial.trim();
+      let query = supabase
+        .from("service_calls")
+        .select("id, service_date, reported_defect, service_performed, parts_replaced")
+        .ilike("equipment_serial", serial)
+        .order("service_date", { ascending: false })
+        .limit(10);
+
+      if (editing?.id) {
+        query = query.neq("id", editing.id);
+      }
+
+      const { data: history, error } = await query;
+      if (error) throw error;
+
+      if (!history || history.length === 0) {
+        setAiHistory(`Nenhum chamado anterior encontrado para o número de série "${serial}". Verifique se o número está correto ou se este é o primeiro atendimento deste equipamento.`);
+        setAnalyzingHistory(false);
+        toast.info("Histórico não localizado.");
+        return;
+      }
+
+      const validHistory = history.filter(h => (h.reported_defect?.trim() || h.service_performed?.trim()));
+
+      if (validHistory.length === 0) {
+        setAiHistory(`Encontrei ${history.length} chamado(s) antigo(s) para este equipamento, mas todos estão com os campos técnicos vazios.`);
+        setAnalyzingHistory(false);
+        return;
+      }
+
+      const historyText = validHistory.map(h => 
+        `Data: ${fmtDate(h.service_date)} | Defeito: ${h.reported_defect || "Não relatado"} | Serviço: ${h.service_performed || "Não detalhado"} | Peças: ${h.parts_replaced || "Nenhuma"}`
+      ).join("\n---\n");
+
+      const prompt = `Como um Engenheiro Clínico Sênior, analise o seguinte histórico de manutenção de um equipamento médico (Nº Série: ${serial}):\n\n${historyText}\n\nCom base nessas ocorrências passadas, existe algum padrão de falha? O que o técnico deve priorizar na verificação atual? Dê um resumo técnico e objetivo.`;
+
+      const localKey = import.meta.env.VITE_GROQ_API_KEY;
+      let suggestion = "";
+
+      if (!localKey) {
+        const { data: aiData, error: aiError } = await supabase.functions.invoke("ai-assistant", {
+          body: { prompt, type: "diagnosis" }
+        });
+        if (aiError) throw aiError;
+        suggestion = aiData?.suggestion;
+      } else {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${localKey.trim()}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [
+              { role: "system", content: "Você é um Engenheiro Clínico Sênior especialista em equipamentos médicos de alta complexidade." },
+              { role: "user", content: prompt }
+            ],
+            temperature: 0.5,
+          }),
+        });
+        const resData = await response.json();
+        suggestion = resData.choices?.[0]?.message?.content;
+      }
+
+      if (!suggestion) throw new Error("IA não retornou análise.");
+      setAiHistory(suggestion);
+      toast.success("Análise de histórico concluída!");
+    } catch (err: any) {
+      console.error("Erro na análise de histórico:", err);
+      toast.error("Erro ao analisar histórico: " + err.message);
+    } finally {
+      setAnalyzingHistory(false);
+    }
+  };
 
   const askAI = async (type: "diagnosis" | "refine") => {
     const prompt = type === "diagnosis" 
@@ -357,10 +448,13 @@ export const ServiceCallForm = ({ open, onOpenChange, editing, onSaved }: Props)
           </div>
 
           <Tabs defaultValue="dados">
-            <TabsList className="flex w-full overflow-x-auto no-scrollbar justify-start md:grid md:grid-cols-4 h-auto p-1 bg-muted/50">
+            <TabsList className="flex w-full overflow-x-auto no-scrollbar justify-start md:grid md:grid-cols-5 h-auto p-1 bg-muted/50">
               <TabsTrigger value="dados" className="flex-1 py-2 text-xs md:text-sm min-w-[80px]">Dados</TabsTrigger>
               <TabsTrigger value="equip" className="flex-1 py-2 text-xs md:text-sm min-w-[80px]">Equipamento</TabsTrigger>
               <TabsTrigger value="servico" className="flex-1 py-2 text-xs md:text-sm min-w-[80px]">Serviço</TabsTrigger>
+              <TabsTrigger value="history" className="flex-1 py-2 text-xs md:text-sm min-w-[80px] gap-1">
+                <History className="w-3 h-3" /> Histórico IA
+              </TabsTrigger>
               <TabsTrigger value="fechamento" className="flex-1 py-2 text-xs md:text-sm min-w-[80px]">Fechamento</TabsTrigger>
             </TabsList>
 
@@ -496,6 +590,41 @@ export const ServiceCallForm = ({ open, onOpenChange, editing, onSaved }: Props)
             <TabsContent value="fechamento" className="space-y-4 pt-4">
               <div className="space-y-2"><Label>Observações</Label>
                 <Textarea rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} /></div>
+            </TabsContent>
+
+            <TabsContent value="history" className="space-y-4 pt-4">
+              <div className="p-4 rounded-lg border border-primary/20 bg-primary/5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <History className="w-5 h-5 text-primary" />
+                    <h3 className="font-semibold text-sm">Análise de Histórico por IA</h3>
+                  </div>
+                  <Button 
+                    type="button" 
+                    onClick={askAIHistory} 
+                    disabled={analyzingHistory || !form.equipment_serial}
+                    size="sm"
+                    className="gap-2"
+                  >
+                    {analyzingHistory ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    {analyzingHistory ? "Analisando..." : "Analisar Passado"}
+                  </Button>
+                </div>
+                
+                <p className="text-xs text-muted-foreground">
+                  A IA vai buscar os últimos 10 atendimentos deste número de série ({form.equipment_serial || "não informado"}) e procurar padrões de defeitos ou peças trocadas.
+                </p>
+
+                {aiHistory && (
+                  <div className="mt-4 p-4 rounded-md bg-white border border-border text-sm whitespace-pre-wrap leading-relaxed animate-in fade-in slide-in-from-top-1">
+                    <div className="flex items-center gap-2 mb-2 text-primary border-b pb-1">
+                      <Sparkles className="w-3 h-3" />
+                      <span className="font-bold text-[10px] uppercase tracking-wider">Parecer do Engenheiro IA</span>
+                    </div>
+                    {aiHistory}
+                  </div>
+                )}
+              </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Relatório aprovado por</Label>
                   <Input value={form.approved_by} onChange={(e) => set("approved_by", e.target.value)} /></div>
