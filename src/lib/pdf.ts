@@ -267,7 +267,8 @@ export async function generateServiceCallPDF(
   y += 8;
 
   // Peças e Observações
-  if (isLaser) {
+  const isLaserReport = c.report_type === "laser";
+  if (isLaserReport) {
     // Tabela de peças simplificada para caber
     const drawPartsTable = (title: string, rows: any[]) => {
       doc.setFont("helvetica", "bold"); doc.setFontSize(7.5);
