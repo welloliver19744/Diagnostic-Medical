@@ -314,37 +314,42 @@ export async function generateServiceCallPDF(
   // Row 12: Observações
   drawDynamicBlock("Observações:", c.notes, 15);
 
-  y += 10; // Espaço maior após as observações
+  y += 10; // Espaço após as observações
 
-  // Linha do Técnico (Nome impresso)
+  // Linha do Técnico (Nome centralizado na linha)
   doc.setFont("helvetica", "bold"); doc.setFontSize(9);
   doc.text("Relatório aprovado por:", M, y + 6);
-  doc.setFont("helvetica", "normal");
-  doc.text(techName || "—", M + 38, y + 6);
-  doc.line(M + 38, y + 6.5, M + 100, y + 6.5);
   
-  y += 20; // Espaço para a assinatura digital/digitalizada
+  const approvalLineStart = M + 38;
+  const approvalLineEnd = M + 110;
+  const approvalLineWidth = approvalLineEnd - approvalLineStart;
+  
+  doc.setFont("helvetica", "normal");
+  doc.text(techName || "—", approvalLineStart + (approvalLineWidth / 2), y + 6, { align: "center" });
+  doc.line(approvalLineStart, y + 6.5, approvalLineEnd, y + 6.5);
+  
+  y += 22; // Espaço para a assinatura digital
 
   // Signatures area
   doc.setFont("helvetica", "bold"); doc.setFontSize(9);
   doc.text("Assinatura do técnico:", M, y + 6);
-  doc.line(M + 35, y + 6.5, M + 95, y + 6.5);
+  doc.line(M + 35, y + 6.5, M + 100, y + 6.5); // Aumentei um pouco a linha
   
-  doc.text("Assinatura do cliente:", M + 100, y + 6);
-  doc.line(M + 135, y + 6.5, M + 190, y + 6.5);
+  doc.text("Assinatura do cliente:", M + 105, y + 6);
+  doc.line(M + 140, y + 6.5, M + 195, y + 6.5);
 
   // Posicionamento das imagens das assinaturas
   if (techSignature) {
-    try { doc.addImage(techSignature, "PNG", M + 40, y - 12, 45, 18); } catch {}
+    try { doc.addImage(techSignature, "PNG", M + 45, y - 14, 45, 20); } catch {}
   }
   if (clientSignature) {
-    try { doc.addImage(clientSignature, "PNG", M + 140, y - 12, 45, 18); } catch {}
+    try { doc.addImage(clientSignature, "PNG", M + 145, y - 14, 45, 20); } catch {}
   }
   
   doc.setFontSize(8); doc.setFont("helvetica", "normal");
-  // Removi o nome debaixo da linha de assinatura do técnico para não repetir
-  doc.text(c.client_name || "—", M + 162.5, y + 10, { align: "center" });
-  y += 15;
+  doc.text(c.client_name || "—", M + 167.5, y + 10, { align: "center" });
+  
+  y += 15; // Espaço final antes do quadro de investigação
 
   // Investigação box
   doc.rect(M, y, RW, 18);
