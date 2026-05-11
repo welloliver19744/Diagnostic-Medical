@@ -1,4 +1,4 @@
-project_id = "hnzrfarruyjgaemrsbcf"
+project_id = "wvifvsmsfycfsbuwqpqf"
 
 [functions.get-service-call-by-token]
 verify_jwt = false

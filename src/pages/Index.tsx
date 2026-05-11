@@ -200,15 +200,51 @@ const Index = () => {
                     <Button size="sm" variant="outline" onClick={() => { generateServiceCallPDF(c); }} title="Gerar OS em PDF">
                       <FileDown className="w-3.5 h-3.5" />
                     </Button>
-                    {(c as any).public_token && (
-                      <Button size="sm" variant="outline" title="Compartilhar link com o cliente" onClick={async () => {
-                        const url = `${window.location.origin}/portal/${(c as any).public_token}`;
-                        const msg = `Olá! Acesse o relatório do serviço e assine: ${url}`;
-                        if (navigator.share) {
-                          try { await navigator.share({ title: "Relatório de Serviço", text: msg, url }); return; } catch {}
+                    {c.public_token && (
+                      <Button size="sm" variant="outline" title="Enviar link para o cliente assinar" onClick={async (e) => {
+                        e.stopPropagation();
+                        console.log("Botão de compartilhar clicado para o chamado:", c.id);
+                        const url = `${window.location.origin}/portal/${c.public_token}`;
+                        console.log("URL gerada:", url);
+                        
+                        const msg = `Olá! Sou o técnico da DiagMed. Por favor, acesse o link para visualizar e assinar o relatório do serviço realizado: ${url}`;
+                        
+                        if (c.contact && c.contact.trim().length > 5) {
+                          const whatsappUrl = `https://wa.me/${c.contact.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
+                          console.log("Abrindo WhatsApp:", whatsappUrl);
+                          window.open(whatsappUrl, "_blank");
+                        } else {
+                          console.log("Sem contato válido, tentando copiar para o clipboard");
+                          try {
+                            // Tenta o método moderno primeiro
+                            if (navigator.clipboard && window.isSecureContext) {
+                              await navigator.clipboard.writeText(url);
+                              toast.success("Link de assinatura copiado! Cole no WhatsApp do cliente.");
+                            } else {
+                              // Fallback para contextos não-seguros (como acesso via IP sem HTTPS)
+                              const textArea = document.createElement("textarea");
+                              textArea.value = url;
+                              textArea.style.position = "fixed";
+                              textArea.style.left = "-9999px";
+                              textArea.style.top = "0";
+                              document.body.appendChild(textArea);
+                              textArea.focus();
+                              textArea.select();
+                              const successful = document.execCommand('copy');
+                              document.body.removeChild(textArea);
+                              if (successful) {
+                                toast.success("Link copiado via fallback! Cole no WhatsApp.");
+                              } else {
+                                throw new Error("Fallback falhou");
+                              }
+                            }
+                          } catch (err) {
+                            console.error("Erro ao copiar:", err);
+                            toast.error("Não foi possível copiar automaticamente. O link é: " + url, {
+                              duration: 10000,
+                            });
+                          }
                         }
-                        await navigator.clipboard.writeText(url);
-                        toast.success("Link copiado! Envie ao cliente.");
                       }}>
                         <Share2 className="w-3.5 h-3.5" />
                       </Button>

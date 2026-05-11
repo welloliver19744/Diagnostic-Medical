@@ -478,8 +478,14 @@ export const ServiceCallForm = ({ open, onOpenChange, editing, onSaved }: Props)
               <div className="space-y-2"><Label>Endereço</Label>
                 <Input value={form.address} onChange={(e) => set("address", e.target.value)} /></div>
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Contato</Label>
-                  <Input value={form.contact} onChange={(e) => set("contact", e.target.value)} /></div>
+                <div className="space-y-2"><Label>Telefone / WhatsApp do Cliente</Label>
+                  <Input 
+                    value={form.contact} 
+                    onChange={(e) => set("contact", e.target.value)} 
+                    placeholder="(00) 00000-0000"
+                  />
+                  <p className="text-[10px] text-muted-foreground">Usado para enviar o link de assinatura via WhatsApp</p>
+                </div>
                 <div className="space-y-2"><Label>Colaborador responsável em atender</Label>
                   <Input value={form.responsible_employee} onChange={(e) => set("responsible_employee", e.target.value)} /></div>
               </div>
