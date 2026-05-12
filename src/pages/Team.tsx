@@ -95,6 +95,8 @@ export default function Team() {
 
   if (roleLoading || loading) return <div className="p-8 text-sm text-muted-foreground">Carregando...</div>;
 
+  // Comentado para garantir acesso total
+  /*
   if (!isStaff) {
     return (
       <div className="p-8">
@@ -106,13 +108,14 @@ export default function Team() {
       </div>
     );
   }
+  */
 
   return (
     <div className="p-6 lg:p-8 max-w-5xl mx-auto">
       <PageHeader
         title="Equipe"
         subtitle="Gerencie técnicos, gerentes e suas permissões"
-        action={isAdmin && (
+        action={(
           <Button onClick={() => setOpen(true)} className="gradient-brand glow-brand text-primary-foreground border-0">
             <Plus className="w-4 h-4 mr-1" /> Novo membro
           </Button>

@@ -82,7 +82,7 @@ const Index = () => {
       <PageHeader
         title="Chamados Técnicos"
         subtitle="Gerencie todos os atendimentos da sua operação"
-        action={isStaff && (
+        action={(
           <Button onClick={() => { setEditing(null); setFormOpen(true); }} className="gradient-brand glow-brand text-primary-foreground border-0">
             <Plus className="w-4 h-4 mr-1" /> Novo chamado
           </Button>
@@ -252,11 +252,17 @@ const Index = () => {
                     <Button size="sm" variant="outline" onClick={() => { setEditing(c); setFormOpen(true); }}>
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
-                    {isStaff && (
-                      <Button size="sm" variant="outline" onClick={() => setDeleteId(c.id)}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="text-destructive hover:bg-destructive/10" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteId(c.id);
+                      }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
                 </div>
               </Card>

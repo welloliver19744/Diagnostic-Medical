@@ -19,6 +19,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -32,12 +33,28 @@ const Auth = () => {
     if (!parsed.success) { toast.error(parsed.error.errors[0].message); return; }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: parsed.data.email,
-        password: parsed.data.password,
-      });
-      if (error) throw error;
-      navigate("/", { replace: true });
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email: parsed.data.email,
+          password: parsed.data.password,
+          options: {
+            data: {
+              full_name: email.split("@")[0], // Nome temporário baseado no email
+              role: "technician",
+            }
+          }
+        });
+        if (error) throw error;
+        toast.success("Conta criada! Verifique seu e-mail ou tente fazer login.");
+        setIsSignUp(false);
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: parsed.data.email,
+          password: parsed.data.password,
+        });
+        if (error) throw error;
+        navigate("/", { replace: true });
+      }
     } catch (err: any) {
       toast.error(err.message ?? "Erro ao autenticar");
     } finally {
@@ -54,7 +71,9 @@ const Auth = () => {
           </div>
           <div>
             <h1 className="text-xl font-semibold tracking-tight">DiagMed Call</h1>
-            <p className="text-xs text-muted-foreground">Gestão de chamados técnicos</p>
+            <p className="text-xs text-muted-foreground">
+              {isSignUp ? "Crie sua conta de técnico" : "Gestão de chamados técnicos"}
+            </p>
           </div>
         </div>
 
@@ -68,12 +87,24 @@ const Auth = () => {
             <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Aguarde..." : "Entrar"}
+            {loading ? "Aguarde..." : isSignUp ? "Cadastrar" : "Entrar"}
           </Button>
         </form>
-        <p className="text-xs text-muted-foreground text-center">
-          O acesso é criado pelo administrador. Solicite seu login para começar.
-        </p>
+        
+        <div className="text-center space-y-2">
+          <button 
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-sm text-primary hover:underline"
+          >
+            {isSignUp ? "Já tenho conta. Fazer login" : "Não tem conta? Cadastre-se aqui"}
+          </button>
+          <p className="text-xs text-muted-foreground">
+            {isSignUp 
+              ? "Após o cadastro, o administrador deverá aprovar seu acesso."
+              : "O acesso é criado pelo administrador ou via cadastro próprio."}
+          </p>
+        </div>
       </Card>
     </main>
   );

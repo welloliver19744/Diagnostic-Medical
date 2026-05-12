@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { Download, Loader2, CheckCircle2 } from "lucide-react";
 import logoUrl from "@/assets/diagnostic-logo.jpg";
 
-const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ClientPortal() {
   const { token } = useParams();
@@ -20,15 +20,35 @@ export default function ClientPortal() {
   const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${FUNCTIONS_URL}/get-service-call-by-token?token=${token}`);
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Erro ao carregar relatório");
-      setData(json);
-      if (json.service_call?.client_signature) setSignature(json.service_call.client_signature);
+      // Busca o chamado diretamente pelo token público
+      const { data: sc, error: scError } = await supabase
+        .from("service_calls")
+        .select("*")
+        .eq("public_token", token)
+        .maybeSingle();
+
+      if (scError) throw scError;
+      if (!sc) throw new Error("Relatório não encontrado");
+
+      // Busca informações do técnico (opcional)
+      let technician = null;
+      if (sc.assigned_to) {
+        const { data: prof } = await supabase
+          .from("profiles")
+          .select("full_name, signature_url")
+          .eq("id", sc.assigned_to)
+          .maybeSingle();
+        technician = prof;
+      }
+
+      setData({ service_call: sc, technician });
+      if (sc.client_signature) setSignature(sc.client_signature);
     } catch (e: any) {
-      setError(e.message);
+      console.error("Erro ao carregar:", e);
+      setError(e.message || "Erro ao carregar relatório");
     } finally {
       setLoading(false);
     }
@@ -40,30 +60,19 @@ export default function ClientPortal() {
     if (!signature) { toast.error("Desenhe sua assinatura primeiro"); return; }
     setSubmitting(true);
     try {
-      console.log("Enviando assinatura...", { token, length: signature.length });
-      const res = await fetch(`${FUNCTIONS_URL}/submit-client-signature`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, signature }),
-      });
+      // Atualiza a assinatura diretamente no banco
+      const { error: updError } = await supabase
+        .from("service_calls")
+        .update({ client_signature: signature })
+        .eq("public_token", token);
       
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Erro ao salvar assinatura");
+      if (updError) throw updError;
       
       toast.success("Assinatura registrada!");
-      
-      // Força o carregamento dos dados atualizados do banco
-      const reloadRes = await fetch(`${FUNCTIONS_URL}/get-service-call-by-token?token=${token}`);
-      const reloadJson = await reloadRes.json();
-      if (reloadRes.ok) {
-        setData(reloadJson);
-        if (reloadJson.service_call?.client_signature) {
-          setSignature(reloadJson.service_call.client_signature);
-        }
-      }
+      await load(); // Recarrega os dados
     } catch (e: any) {
-      console.error("Erro no portal:", e);
-      toast.error(e.message);
+      console.error("Erro ao salvar assinatura:", e);
+      toast.error(e.message || "Erro ao salvar assinatura");
     } finally {
       setSubmitting(false);
     }
