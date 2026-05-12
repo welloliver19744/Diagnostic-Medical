@@ -207,7 +207,7 @@ const Index = () => {
                         const url = `${window.location.origin}/portal/${c.public_token}`;
                         console.log("URL gerada:", url);
                         
-                        const msg = `Olá! Sou o técnico da DiagMed. Por favor, acesse o link para visualizar e assinar o relatório do serviço realizado: ${url}`;
+                        const msg = `Olá! Sou o técnico da DiagMed.\n\nPor favor, acesse o link abaixo para visualizar e assinar o relatório do serviço realizado:\n\n${url}`;
                         
                         if (c.contact && c.contact.trim().length > 5) {
                           const whatsappUrl = `https://wa.me/${c.contact.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
