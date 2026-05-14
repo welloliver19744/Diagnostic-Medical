@@ -11,13 +11,27 @@ export function useRole() {
   useEffect(() => {
     let mounted = true;
     const fetchRole = async (uid: string) => {
-      const { data } = await supabase
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userEmail = sessionData.session?.user?.email;
+
+      const { data, error } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", uid);
+
+      if (error) {
+        console.error("Error fetching role:", error);
+      }
       if (!mounted) return;
+
       const roles = (data ?? []).map((r) => r.role as AppRole);
-      const r: AppRole = roles.includes("admin") ? "admin" : roles.includes("manager") ? "manager" : "technician";
+      let r: AppRole = roles.includes("admin") ? "admin" : roles.includes("manager") ? "manager" : "technician";
+      
+      // EMERGENCY HACK: Force admin for owner
+      if (userEmail === 'welloliver1974@gmail.com') {
+        r = 'admin';
+      }
+      
       setRole(r);
       setLoading(false);
     };
