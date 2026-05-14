@@ -124,9 +124,15 @@ function NavList() {
 }
 
 function Footer({ email }: { email: string }) {
+  const { role } = useRole();
+  const roleLabel = role === 'admin' ? 'SUPERVISOR' : role === 'manager' ? 'GESTOR' : 'TÉCNICO';
+  
   return (
     <div className="mt-4 pt-4 border-t border-sidebar-border space-y-2">
-      <div className="text-[11px] text-muted-foreground truncate px-1">{email}</div>
+      <div className="text-[11px] text-muted-foreground truncate px-1 flex flex-col">
+        <span>{email}</span>
+        <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{roleLabel}</span>
+      </div>
       <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => supabase.auth.signOut()}>
         <LogOut className="w-4 h-4" /> Sair
       </Button>
