@@ -124,14 +124,9 @@ function NavList() {
 }
 
 function Footer({ email }: { email: string }) {
-  const { role } = useRole();
   return (
     <div className="mt-4 pt-4 border-t border-sidebar-border space-y-2">
-      <div className="text-[11px] text-muted-foreground truncate px-1 flex flex-col">
-        <span>{email}</span>
-        <span className="text-[10px] font-bold text-amber-500 uppercase">{role}</span>
-      </div>
-      <div className="text-[9px] text-primary/50 px-1 font-bold">VERSÃO 2.1 - BYPASS ATIVO</div>
+      <div className="text-[11px] text-muted-foreground truncate px-1">{email}</div>
       <Button variant="ghost" size="sm" className="w-full justify-start gap-2" onClick={() => supabase.auth.signOut()}>
         <LogOut className="w-4 h-4" /> Sair
       </Button>

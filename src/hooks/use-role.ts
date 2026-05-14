@@ -11,9 +11,6 @@ export function useRole() {
   useEffect(() => {
     let mounted = true;
     const fetchRole = async (uid: string) => {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userEmail = sessionData.session?.user?.email;
-
       const { data, error } = await supabase
         .from("user_roles")
         .select("role")
@@ -25,12 +22,7 @@ export function useRole() {
       if (!mounted) return;
 
       const roles = (data ?? []).map((r) => r.role as AppRole);
-      let r: AppRole = roles.includes("admin") ? "admin" : roles.includes("manager") ? "manager" : "technician";
-      
-      // EMERGENCY HACK: Force admin for owner
-      if (userEmail === 'welloliver1974@gmail.com') {
-        r = 'admin';
-      }
+      const r: AppRole = roles.includes("admin") ? "admin" : roles.includes("manager") ? "manager" : "technician";
       
       setRole(r);
       setLoading(false);
