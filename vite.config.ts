@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => ({
         short_name: "DiagMed Call",
         description: "Gestão de chamados técnicos e relatórios",
         theme_color: "#2563eb",
-        background_color: "#2563eb",
+        background_color: "#ffffff",
         display: "standalone",
         icons: [
           {
