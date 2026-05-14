@@ -15,6 +15,7 @@ import Team from "./pages/Team.tsx";
 import Profile from "./pages/Profile.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import ClientPortal from "./pages/ClientPortal.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/portal/:token" element={<ClientPortal />} />
           <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/" element={<Index />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/parts" element={<Parts />} />

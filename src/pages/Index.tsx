@@ -162,7 +162,7 @@ const Index = () => {
                             <span className="flex items-center gap-1 group">
                               <Phone className="w-3 h-3" />
                               {c.contact}
-                              <a 
+                              <a
                                 href={`https://wa.me/${c.contact.replace(/\D/g, "")}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -184,7 +184,7 @@ const Index = () => {
                       <p className="text-xs text-muted-foreground flex items-center gap-1 group">
                         <MapPin className="w-3 h-3 shrink-0" />
                         <span className="truncate">{c.address}</span>
-                        <a 
+                        <a
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.address)}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -225,9 +225,9 @@ const Index = () => {
                         console.log("Botão de compartilhar clicado para o chamado:", c.id);
                         const url = `${window.location.origin}/portal/${c.public_token}`;
                         console.log("URL gerada:", url);
-                        
+
                         const msg = `Olá! Sou o técnico da DiagMed.\n\nPor favor, acesse o link abaixo para visualizar e assinar o relatório do serviço realizado:\n\n${url}`;
-                        
+
                         if (c.contact && c.contact.trim().length > 5) {
                           const whatsappUrl = `https://wa.me/${c.contact.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
                           console.log("Abrindo WhatsApp:", whatsappUrl);
@@ -271,10 +271,10 @@ const Index = () => {
                     <Button size="sm" variant="outline" onClick={() => { setEditing(c); setFormOpen(true); }}>
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="text-destructive hover:bg-destructive/10" 
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-destructive hover:bg-destructive/10"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteId(c.id);

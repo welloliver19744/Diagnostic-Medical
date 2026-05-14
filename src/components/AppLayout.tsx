@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Wrench, Users, Package, CalendarDays, BarChart3, LogOut, Menu, X, ShieldCheck, UserCircle2, Plus } from "lucide-react";
+import { LayoutDashboard, Wrench, Users, Package, CalendarDays, BarChart3, LogOut, Menu, X, ShieldCheck, UserCircle2, Plus, ClipboardList } from "lucide-react";
 import { useRole } from "@/hooks/use-role";
 
 const navAll = [
-  { to: "/", label: "Chamados", icon: LayoutDashboard, end: true, staffOnly: false },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, staffOnly: true },
+  { to: "/", label: "Chamados", icon: ClipboardList, end: true, staffOnly: false },
   { to: "/clients", label: "Clientes", icon: Users, staffOnly: false },
   { to: "/parts", label: "Estoque", icon: Package, staffOnly: false },
   { to: "/reminders", label: "Agenda", icon: CalendarDays, staffOnly: false },
@@ -86,7 +87,8 @@ function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 function NavList() {
-  const items = navAll;
+  const { isStaff } = useRole();
+  const items = navAll.filter(n => !n.staffOnly || isStaff);
   return (
     <nav className="flex-1 flex flex-col gap-0.5">
       {items.map((n) => (
